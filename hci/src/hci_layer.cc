@@ -155,6 +155,12 @@ void initialization_complete() {
   hci_thread.DoInThread(FROM_HERE, base::Bind(&event_finish_startup, nullptr));
 }
 
+ void initialization_failure() {
+  static char fail = 'F';
+  hci_thread.DoInThread(FROM_HERE, base::Bind(&event_finish_startup, (void*) &fail));
+}
+
+
 void hci_event_received(const base::Location& from_here, BT_HDR* packet) {
   btsnoop->capture(packet, true);
 
@@ -371,7 +377,11 @@ static void event_finish_startup(UNUSED_ATTR void* context) {
   if (!startup_future) {
     return;
   }
-  future_ready(startup_future, FUTURE_SUCCESS);
+  if ((char*) context == nullptr)
+    future_ready(startup_future, FUTURE_SUCCESS);
+  else
+    future_ready(startup_future, FUTURE_FAIL);
+
   startup_future = NULL;
 }
 

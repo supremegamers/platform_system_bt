@@ -50,6 +50,7 @@ using ::android::hardware::bluetooth::V1_0::Status;
 using namespace ::android::hardware::bluetooth;
 
 extern void initialization_complete();
+extern void initialization_failure();
 extern void hci_event_received(const base::Location& from_here, BT_HDR* packet);
 extern void acl_event_received(BT_HDR* packet);
 extern void sco_data_received(BT_HDR* packet);
@@ -99,8 +100,10 @@ class BluetoothHciCallbacks : public V1_1::IBluetoothHciCallbacks {
           status);
       return Void();
     }
-    CHECK(status == Status::SUCCESS);
-    initialization_complete();
+    if (status == Status::SUCCESS)
+      initialization_complete();
+    else
+      initialization_failure();
     return Void();
   }
 

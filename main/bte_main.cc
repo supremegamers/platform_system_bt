@@ -158,12 +158,26 @@ void bte_main_enable() {
   APPL_TRACE_DEBUG("%s", __func__);
 
   if (bluetooth::shim::is_gd_shim_enabled()) {
+    bool ret = false;
     LOG_INFO(LOG_TAG, "%s Gd shim module enabled", __func__);
     module_start_up(get_module(GD_SHIM_MODULE));
-    module_start_up(get_module(GD_HCI_MODULE));
+    ret = module_start_up(get_module(GD_HCI_MODULE));
+    if (!ret) {
+      APPL_TRACE_DEBUG("%s: failed to start hci module",__func__);
+      module_shut_down(get_module(GD_HCI_MODULE));
+      module_shut_down(get_module(GD_SHIM_MODULE));
+      return;
+    }
   } else {
+    bool ret = false;
     module_start_up(get_module(BTSNOOP_MODULE));
-    module_start_up(get_module(HCI_MODULE));
+    ret = module_start_up(get_module(HCI_MODULE));
+    if (!ret) {
+      APPL_TRACE_DEBUG("%s: failed to start hci module",__func__);
+      module_shut_down(get_module(HCI_MODULE));
+      module_shut_down(get_module(BTSNOOP_MODULE));
+      return;
+    }
   }
 
   BTU_StartUp();
