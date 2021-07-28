@@ -295,8 +295,8 @@ bool bta_ag_sdp_find_attr(tBTA_AG_SCB* p_scb, tBTA_SERVICE_MASK service) {
   tSDP_DISC_ATTR* p_attr;
   tSDP_PROTOCOL_ELEM pe;
   uint16_t uuid;
-  bool result = false;
 
+  bool result = false;
   if (service & BTA_HFP_SERVICE_MASK) {
     uuid = UUID_SERVCLASS_HF_HANDSFREE;
     /* If there is no cached peer version, use default one */
@@ -327,10 +327,11 @@ bool bta_ag_sdp_find_attr(tBTA_AG_SCB* p_scb, tBTA_SERVICE_MASK service) {
       } else
         break;
     }
-
+    memset(&pe, 0, sizeof(tSDP_PROTOCOL_ELEM));
     /* get scn from proto desc list if initiator */
     if (p_scb->role == BTA_AG_INT) {
-      if (SDP_FindProtocolListElemInRec(p_rec, UUID_PROTOCOL_RFCOMM, &pe)) {
+      if ((SDP_FindProtocolListElemInRec(p_rec, UUID_PROTOCOL_RFCOMM, &pe))
+          && (pe.num_params != 0)) {
         p_scb->peer_scn = (uint8_t)pe.params[0];
       } else {
         continue;
