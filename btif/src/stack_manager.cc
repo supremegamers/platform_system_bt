@@ -262,10 +262,19 @@ static void event_start_up_stack(UNUSED_ATTR void* context) {
     module_shut_down(get_local_module(GD_IDLE_MODULE));
     module_start_up(get_local_module(GD_SHIM_MODULE));
     module_start_up(get_local_module(BTIF_CONFIG_MODULE));
+
   } else {
+    bool ret = false;
     module_start_up(get_local_module(BTIF_CONFIG_MODULE));
     module_start_up(get_local_module(BTSNOOP_MODULE));
-    module_start_up(get_local_module(HCI_MODULE));
+    ret = module_start_up(get_module(HCI_MODULE));
+    if (!ret) {
+      APPL_TRACE_DEBUG("%s: failed to start hci module",__func__);
+      module_shut_down(get_module(HCI_MODULE));
+      module_shut_down(get_module(BTSNOOP_MODULE));
+      module_shut_down(get_module(BTIF_CONFIG_MODULE));
+      return;
+    }
   }
 
   get_btm_client_interface().lifecycle.btm_init();
